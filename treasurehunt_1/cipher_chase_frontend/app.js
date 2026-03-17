@@ -2,7 +2,7 @@
    TREASURE HUNT — SPA Logic
    ══════════════════════════════════════════════════════ */
 
-const API = "http://localhost:5000/api";
+const API = "https://codosapiens-ai.vercel.app/api";
 
 /* ── STATE ── */
 let state = {
