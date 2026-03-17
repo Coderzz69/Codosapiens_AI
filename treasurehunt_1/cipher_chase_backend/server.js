@@ -23,22 +23,17 @@ app.get("/api/protected", authMiddleware, (req, res) => {
   res.json({ message: `Welcome ${req.team.name}` });
 });
 
-const PORT = process.env.PORT || 5000;
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("Could not connect to MongoDB", err));
 
-async function start() {
-  try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (err) {
-    console.error("Failed to start server", err);
-    process.exit(1);
-  }
+// For local development
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
 
-start();
+module.exports = app;
