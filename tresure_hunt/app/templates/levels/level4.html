@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="level">
+  <h2>Level 4 — The Cipher Vault</h2>
+  <p class="story">{{ story }}</p>
+
+  <div class="vaults">
+    <div class="card">
+      <h3>Vault Door 1 — Caesar</h3>
+      <code>OBBG{c4_</code>
+      <p class="muted">Hint: Julius liked this one.</p>
+      <div class="tool">
+        <input type="text" id="caesar-input" value="OBBG{c4_" />
+        <input type="number" id="caesar-shift" value="13" min="1" max="25" />
+        <button class="btn secondary" type="button" onclick="decodeCaesar()">Decode</button>
+        <div id="caesar-output" class="output"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Vault Door 2 — Vigenere</h3>
+      <code>H1GL3JZ</code>
+      <p class="muted">The key was spoken aloud when you arrived.</p>
+      <div class="tool">
+        <input type="text" id="vigenere-input" value="H1GL3JZ" />
+        <input type="text" id="vigenere-key" placeholder="Key" />
+        <button class="btn secondary" type="button" onclick="decodeVigenere()">Decode</button>
+        <div id="vigenere-output" class="output"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Vault Door 3 — Word Extraction</h3>
+      <code>[W3:L1][W7:L1][W12:L1]}</code>
+      <p class="muted">Key: 3rd, 7th, and 12th words of the home page monologue.</p>
+      <p>Combine the first letters of these guardians to unlock the final piece.</p>
+    </div>
+  </div>
+
+  {% if not solved %}
+  <form class="form" method="post" action="{{ url_for('challenges.submit_flag', n=4) }}">
+    <label>Submit Flag
+      <input type="text" name="flag" placeholder="BOOT{...}" required />
+    </label>
+    <button class="btn" type="submit">Submit</button>
+  </form>
+  {% else %}
+    <div class="solved">Solved.</div>
+  {% endif %}
+
+  <div class="level-nav">
+    {% if n > 1 %}
+      <a href="{{ url_for('challenges.level', n=n-1) }}" class="btn secondary">← Previous Level</a>
+    {% endif %}
+    {% if solved and n < 5 %}
+      <a href="{{ url_for('challenges.level', n=n+1) }}" class="btn">Next Level →</a>
+    {% endif %}
+  </div>
+
+  <div class="hints">
+    <h3>Hints</h3>
+    {% for i in range(1,4) %}
+      {% if i in hints_used %}
+        <div class="hint">{{ hints[i-1] }}</div>
+      {% else %}
+        <form method="post" action="{{ url_for('challenges.request_hint', n=4, h=i) }}">
+          <button class="btn secondary" type="submit">Request Hint {{ i }} (-10 pts)</button>
+        </form>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

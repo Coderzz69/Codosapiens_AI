@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="level retro">
+  <h2>Forgotten Archive</h2>
+  <p class="story">A dusty admin panel flickers on the screen.</p>
+
+  <form class="form" method="post" action="{{ url_for('challenges.forgotten_archive') }}">
+    <label>College founding year
+      <input type="text" name="year" required />
+    </label>
+    <button class="btn" type="submit">Verify</button>
+  </form>
+
+  {% if correct is sameas true %}
+    <div class="success">Correct. Fragment: <code>{{ fragment }}</code></div>
+  {% elif correct is sameas false %}
+    <div class="error">Wrong year. r00t_senior laughs in the dark.</div>
+  {% endif %}
+</section>
+{% endblock %}

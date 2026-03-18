@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Leaderboard</h2>
+<div id="leaderboard" class="leaderboard"></div>
+<script>
+  window.LEADERBOARD_API = "{{ url_for('leaderboard.leaderboard_api') }}";
+</script>
+{% endblock %}

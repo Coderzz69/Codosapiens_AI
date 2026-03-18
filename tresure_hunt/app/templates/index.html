@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <h1>Operation: First Boot</h1>
+  <p>Five servers. Five locks. Prove you belong.</p>
+  <div class="cta">
+    <a class="btn" href="{{ url_for('auth.register') }}">Register</a>
+    <a class="btn secondary" href="{{ url_for('auth.login') }}">Team Login</a>
+  </div>
+</section>
+
+<section class="story">
+  <h2>Message from r00t_senior</h2>
+  <p class="monologue">Freshers hear clock ticking as the raven circles above your first signal to begin.</p>
+  <p class="subtext">Find the 3rd, 7th, and 12th words. They matter later.</p>
+</section>
+{% endblock %}

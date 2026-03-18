@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Operation: First Boot</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Operation: First Boot</div>
+    <nav class="nav">
+      <a href="{{ url_for('auth.index') }}">Home</a>
+      {% if session.get('team_id') %}
+        <a href="{{ url_for('challenges.level', n=1) }}">Challenges</a>
+      {% endif %}
+      <a href="{{ url_for('leaderboard.leaderboard') }}">Leaderboard</a>
+      {% if session.get('team_id') %}
+        <span class="team">{{ session.get('team_name') }}</span>
+        <a href="{{ url_for('auth.logout') }}">Logout</a>
+      {% else %}
+        <a href="{{ url_for('auth.login') }}">Login</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash">
+          {% for category, message in messages %}
+            <div class="flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/decoder.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/leaderboard.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/stego.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/level1_unlock.js') }}"></script>
+</body>
+</html>

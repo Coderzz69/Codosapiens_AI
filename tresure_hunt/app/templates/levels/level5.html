@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="level">
+  <h2>Level 5 — The Final Firewall</h2>
+  <p class="story">{{ story }}</p>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Sub-challenge A — Image Steganography</h3>
+      <img class="stego" src="{{ url_for('static', filename='assets/stego_image.png') }}" alt="stego" />
+      <button class="btn secondary" type="button" onclick="analyzeImage()">Analyze Image</button>
+      <div id="stego-output" class="output"></div>
+    </div>
+
+    <div class="card">
+      <h3>Sub-challenge B — The Broken Rule</h3>
+      <pre class="puzzle">Four students — Asha, Bala, Chitra, Deepak — must be seated in 4 chairs.
+Rules:
+  1. Asha must sit to the left of Bala.
+  2. Chitra must sit to the right of Bala.
+  3. Deepak must sit at the leftmost chair.
+  4. Asha must sit at the leftmost chair.
+
+Who sits where?</pre>
+      <label>Answer
+        <input type="text" id="logic-answer" placeholder="Your answer" />
+      </label>
+      <label>Which rule makes this unsolvable?
+        <select id="logic-rule">
+          <option>Rule 1</option>
+          <option>Rule 2</option>
+          <option>Rule 3+4</option>
+          <option>All rules</option>
+        </select>
+      </label>
+      <button class="btn secondary" type="button" onclick="checkLogic()">Check</button>
+      <div id="logic-output" class="output"></div>
+    </div>
+
+    <div class="card">
+      <h3>Sub-challenge C — Fragment Assembly</h3>
+      <p>Collect fragments from earlier levels. Final piece sleeps at <code>/secret-fragments/last</code>.</p>
+      <div class="fragments">
+        <code>B</code>
+        <code>OT{</code>
+        <code>fin4l</code>
+        <code>_k3y_</code>
+        <code>h3r3}</code>
+      </div>
+      <p class="muted">Assemble carefully. One answer is a decoy.</p>
+    </div>
+  </div>
+
+  {% if not solved %}
+  <form class="form" method="post" action="{{ url_for('challenges.submit_flag', n=5) }}">
+    <label>LOCK1
+      <input type="text" name="lock1" placeholder="firewall" required />
+    </label>
+    <label>LOCK2
+      <input type="text" name="lock2" placeholder="logic" required />
+    </label>
+    <label>LOCK3
+      <input type="text" name="lock3" placeholder="BOT{...}" required />
+    </label>
+    <button class="btn" type="submit">Submit Locks</button>
+  </form>
+  {% else %}
+    <div class="solved">Solved.</div>
+  {% endif %}
+
+  <div class="level-nav">
+    {% if n > 1 %}
+      <a href="{{ url_for('challenges.level', n=n-1) }}" class="btn secondary">← Previous Level</a>
+    {% endif %}
+  </div>
+
+  <div class="hints">
+    <h3>Hints</h3>
+    {% for i in range(1,4) %}
+      {% if i in hints_used %}
+        <div class="hint">{{ hints[i-1] }}</div>
+      {% else %}
+        <form method="post" action="{{ url_for('challenges.request_hint', n=5, h=i) }}">
+          <button class="btn secondary" type="submit">Request Hint {{ i }} (-10 pts)</button>
+        </form>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

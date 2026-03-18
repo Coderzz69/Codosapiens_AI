@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<section class="panel">
+  <h3>Create Team</h3>
+  <form class="form" method="post" action="{{ url_for('admin.create_team') }}">
+    <label>Team Name
+      <input type="text" name="name" required />
+    </label>
+    <label>Password
+      <input type="text" name="password" required />
+    </label>
+    <label>Color
+      <input type="color" name="color" value="#6366f1" />
+    </label>
+    <button class="btn" type="submit">Create</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h3>Auto-Assign Players</h3>
+  <form class="form" method="post" action="{{ url_for('admin.auto_assign') }}">
+    <label>Team Size
+      <input type="number" name="team_size" value="4" min="3" max="4" />
+    </label>
+    <button class="btn" type="submit">Auto-Assign</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h3>Teams</h3>
+  <table class="table">
+    <tr><th>Name</th><th>Color</th><th>Reset</th></tr>
+    {% for t in teams %}
+      <tr>
+        <td>{{ t.name }}</td>
+        <td><span class="color-dot" style="background: {{ t.color }}"></span>{{ t.color }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.reset_team') }}">
+            <input type="hidden" name="team_id" value="{{ t.id }}" />
+            <button class="btn tiny" type="submit">Reset</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h3>Players</h3>
+  <table class="table">
+    <tr><th>Name</th><th>Roll</th><th>Email</th><th>Team</th><th>Assign</th></tr>
+    {% for p in players %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ p.roll_no }}</td>
+        <td>{{ p.email }}</td>
+        <td>{{ p.team_id }}</td>
+        <td>
+          <form method="post" action="{{ url_for('admin.assign_player') }}">
+            <input type="hidden" name="player_id" value="{{ p.id }}" />
+            <select name="team_id">
+              {% for t in teams %}
+                <option value="{{ t.id }}">{{ t.name }}</option>
+              {% endfor %}
+            </select>
+            <button class="btn tiny" type="submit">Assign</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h3>Solves</h3>
+  <table class="table">
+    <tr><th>Team ID</th><th>Level</th><th>Time</th><th>First Blood</th></tr>
+    {% for s in solves %}
+      <tr>
+        <td>{{ s.team_id }}</td>
+        <td>{{ s.level }}</td>
+        <td>{{ s.solved_at }}</td>
+        <td>{{ s.first_blood }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<section class="panel">
+  <h3>Hint Usage</h3>
+  <table class="table">
+    <tr><th>Team ID</th><th>Level</th><th>Hint</th><th>Time</th></tr>
+    {% for h in hints %}
+      <tr>
+        <td>{{ h.team_id }}</td>
+        <td>{{ h.level }}</td>
+        <td>{{ h.hint_number }}</td>
+        <td>{{ h.used_at }}</td>
+      </tr>
+    {% endfor %}
+  </table>
+</section>
+
+<p><a class="btn secondary" href="{{ url_for('admin.export') }}">Export Results CSV</a></p>
+{% endblock %}

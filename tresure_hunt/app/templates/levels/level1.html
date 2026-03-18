@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="level">
+  <h2>Level 1 — The Visible Invisible</h2>
+  <p class="story">{{ story }}</p>
+
+  <div class="fake-404">
+    <h3>404</h3>
+    <p>There's nothing here. Or is there?</p>
+  </div>
+
+  <div style="display:none">
+    <div>
+      <!-- r00t_senior was here. Fragment: BOOT{p1_ -->
+    </div>
+  </div>
+
+  {% if not solved %}
+  <form class="form" method="post" action="{{ url_for('challenges.submit_flag', n=1) }}">
+    <label>Submit Flag
+      <input type="text" name="flag" placeholder="BOOT{...}" required />
+    </label>
+    <button class="btn" type="submit">Submit</button>
+  </form>
+  {% else %}
+    <div class="solved">Solved.</div>
+  {% endif %}
+
+  <div class="level-nav">
+    {% if n > 1 %}
+      <a href="{{ url_for('challenges.level', n=n-1) }}" class="btn secondary">← Previous Level</a>
+    {% endif %}
+    {% if solved and n < 5 %}
+      <a href="{{ url_for('challenges.level', n=n+1) }}" class="btn">Next Level →</a>
+    {% endif %}
+  </div>
+
+  <div class="hints">
+    <h3>Hints</h3>
+    {% for i in range(1,4) %}
+      {% if i in hints_used %}
+        <div class="hint">{{ hints[i-1] }}</div>
+      {% else %}
+        <form method="post" action="{{ url_for('challenges.request_hint', n=1, h=i) }}">
+          <button class="btn secondary" type="submit">Request Hint {{ i }} (-10 pts)</button>
+        </form>
+      {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
