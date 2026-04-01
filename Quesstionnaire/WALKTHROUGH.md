@@ -55,3 +55,18 @@ The leaderboard uses Server-Sent Events (SSE) to update in real-time as soon as 
 - **Level Progression**: Successive questions unlock automatically after solving the current level.
 - **SSE Stream**: Leaderboard automatically gets pushed new points without refreshing.
 - **Resilience**: The Frontend handles `401` authentication drops seamlessly and the Leaderboard uses a 5s automatic retry backoff if the server goes offline.
+
+## Production / Monolithic Deployment (1-Click Hosting)
+
+If you are hosting this on a platform like Render, Heroku, or your own server, you can run the entire platform as a **single full-stack service**. The backend Express server will dynamically serve the built static React assets for both the Challenge Interface and the Leaderboard.
+
+1. Build the frontend and leaderboard UI assets:
+   ```bash
+   npm run build:production
+   ```
+2. Start the unified monolith server:
+   ```bash
+   npm run start:production
+   ```
+   
+The platform will now be completely accessible via whatever port the backend is running on (`http://localhost:4000`), with the leaderboard accessible at `http://localhost:4000/leaderboard`.

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const { config } = require('./config');
 const { migrate } = require('./migrate');
 const { requireAuth } = require('./middleware/auth');
@@ -33,6 +34,18 @@ async function main() {
 
   // Protected admin routes
   app.use('/admin', adminRouter);
+
+  // Serve static UI assets in production
+  const frontendPath = path.join(__dirname, '../../frontend/dist');
+  const leaderboardPath = path.join(__dirname, '../../leaderboard/dist');
+
+  // Leaderboard UI
+  app.use('/leaderboard', express.static(leaderboardPath));
+  // Frontend UI
+  app.use('/', express.static(frontendPath));
+
+  app.get('/leaderboard/*', (req, res) => res.sendFile(path.join(leaderboardPath, 'index.html')));
+  app.get('*', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
   app.use((err, req, res, next) => {
     console.error(err);
