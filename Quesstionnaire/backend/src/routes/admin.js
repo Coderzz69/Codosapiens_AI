@@ -45,4 +45,21 @@ router.post('/team', async (req, res) => {
   }
 });
 
+router.delete('/team/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await require('../db').withClient(async (client) => {
+      await client.query('BEGIN');
+      await client.query('DELETE FROM submissions WHERE team_id = $1', [id]);
+      await client.query('DELETE FROM team_question_progress WHERE team_id = $1', [id]);
+      await client.query('DELETE FROM team_contest WHERE team_id = $1', [id]);
+      await client.query('DELETE FROM teams WHERE id = $1', [id]);
+      await client.query('COMMIT');
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = { router };

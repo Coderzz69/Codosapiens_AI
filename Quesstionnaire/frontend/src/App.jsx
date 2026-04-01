@@ -189,6 +189,22 @@ function AdminScreen() {
     }
   };
 
+  const deleteTeam = async (id, name) => {
+    if (!window.confirm(`Are you sure you want to permanently delete team '${name}' and all their progress?`)) return;
+    try {
+      const res = await fetch(`${API_URL}/admin/team/${id}`, {
+        method: 'DELETE',
+        headers: { 'x-admin-secret': secret }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to delete');
+      setMsg(`Team ${name} was deleted.`);
+      fetchTeams(secret);
+    } catch (e) {
+      setMsg(e.message);
+    }
+  };
+
   if (err && err.includes('Unauthorized')) {
     return (
       <div className="app login-screen">
@@ -232,9 +248,12 @@ function AdminScreen() {
           <h2 className="editor-label" style={{marginBottom: '1rem'}}>REGISTERED TEAMS ({teams.length})</h2>
           <ul style={{ listStyle: 'none', padding: 0 }}>
             {teams.map(t => (
-              <li key={t.id} style={{ padding: '1rem 0', borderBottom: '1px solid var(--border-glow)', display: 'flex', justifyContent: 'space-between' }}>
-                <strong style={{color: 'var(--brand-text)'}}>{t.name}</strong> 
-                <span style={{opacity:0.6, fontSize:'0.85em', fontFamily: 'var(--font-mono)'}}>{new Date(t.created_at).toLocaleString()}</span>
+              <li key={t.id} style={{ padding: '1rem 0', borderBottom: '1px solid var(--border-glow)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <strong style={{color: 'var(--brand-text)'}}>{t.name}</strong> 
+                  <span style={{opacity:0.6, fontSize:'0.85em', fontFamily: 'var(--font-mono)', marginLeft: '1rem'}}>{new Date(t.created_at).toLocaleString()}</span>
+                </div>
+                <button className="btn-ghost btn-sm" style={{color: '#ff4444', borderColor: '#ff4444'}} onClick={() => deleteTeam(t.id, t.name)}>🗑 REMOVE</button>
               </li>
             ))}
           </ul>
