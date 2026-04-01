@@ -149,6 +149,7 @@ function AdminScreen() {
   const [newTeam, setNewTeam] = useState('');
   const [newPin, setNewPin] = useState('');
   const [msg, setMsg] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(null);
 
   const fetchTeams = async (s) => {
     setLoading(true); setErr('');
@@ -189,8 +190,10 @@ function AdminScreen() {
     }
   };
 
-  const deleteTeam = async (id, name) => {
-    if (!window.confirm(`Are you sure you want to permanently delete team '${name}' and all their progress?`)) return;
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
+    const { id, name } = confirmDelete;
+    setConfirmDelete(null);
     try {
       const res = await fetch(`${API_URL}/admin/team/${id}`, {
         method: 'DELETE',
@@ -241,9 +244,20 @@ function AdminScreen() {
             <input placeholder="PIN (4 digits)" value={newPin} onChange={e=>setNewPin(e.target.value)} style={{width: '150px'}} />
             <button className="btn-primary" onClick={createTeam}>CREATE</button>
           </div>
-          {msg && <div style={{marginTop:'1rem', color: msg.includes('created')?'var(--brand-neon)':'#ff4444'}}>{msg}</div>}
+          {msg && <div style={{marginTop:'1rem', color: (msg.includes('created') || msg.includes('deleted')) ? 'var(--brand-neon)' : '#ff4444'}}>{msg}</div>}
         </div>
         
+        {confirmDelete && (
+          <div className="card" style={{ marginTop: '2rem', border: '1px solid #ff4444', backgroundColor: 'rgba(255, 68, 68, 0.1)' }}>
+            <h3 style={{color: '#ff4444', marginBottom: '1rem'}}>⚠ PERMANENT DELETION</h3>
+            <p>Are you sure you want to permanently delete team <strong>{confirmDelete.name}</strong> and all their progress? This cannot be undone.</p>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button className="btn-primary" style={{backgroundColor: '#ff4444'}} onClick={executeDelete}>YES, DELETE TEAM</button>
+              <button className="btn-ghost" onClick={() => setConfirmDelete(null)}>CANCEL</button>
+            </div>
+          </div>
+        )}
+
         <div className="card" style={{ marginTop: '2rem' }}>
           <h2 className="editor-label" style={{marginBottom: '1rem'}}>REGISTERED TEAMS ({teams.length})</h2>
           <ul style={{ listStyle: 'none', padding: 0 }}>
@@ -253,7 +267,7 @@ function AdminScreen() {
                   <strong style={{color: 'var(--brand-text)'}}>{t.name}</strong> 
                   <span style={{opacity:0.6, fontSize:'0.85em', fontFamily: 'var(--font-mono)', marginLeft: '1rem'}}>{new Date(t.created_at).toLocaleString()}</span>
                 </div>
-                <button className="btn-ghost btn-sm" style={{color: '#ff4444', borderColor: '#ff4444'}} onClick={() => deleteTeam(t.id, t.name)}>🗑 REMOVE</button>
+                <button className="btn-ghost btn-sm" style={{color: '#ff4444', borderColor: '#ff4444'}} onClick={() => setConfirmDelete({id: t.id, name: t.name})}>🗑 REMOVE</button>
               </li>
             ))}
           </ul>
