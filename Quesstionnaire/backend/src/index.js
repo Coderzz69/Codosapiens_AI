@@ -21,20 +21,6 @@ async function main() {
   app.use(cors());
   app.use(express.json({ limit: '1mb' }));
 
-  app.get('/health', (req, res) => res.json({ ok: true }));
-  app.use('/auth', authRouter);
-  app.use(leaderboardRouter);
-
-  app.use(requireAuth);
-  app.use(startRouter);
-  app.use(progressRouter);
-  app.use(getQuestionRouter);
-  app.use(submitRouter);
-  app.use(hintRouter);
-
-  // Protected admin routes
-  app.use('/admin', adminRouter);
-
   // Serve static UI assets in production
   const frontendPath = path.join(__dirname, '../../frontend/dist');
   const leaderboardPath = path.join(__dirname, '../../leaderboard/dist');
@@ -44,8 +30,19 @@ async function main() {
   // Frontend UI
   app.use('/', express.static(frontendPath));
 
-  app.get('/leaderboard/*', (req, res) => res.sendFile(path.join(leaderboardPath, 'index.html')));
-  app.get('*', (req, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+  app.get('/health', (req, res) => res.json({ ok: true }));
+  app.use('/auth', authRouter);
+  app.use(leaderboardRouter);
+
+  // Protected admin routes
+  app.use('/admin', adminRouter);
+
+  app.use(requireAuth);
+  app.use(startRouter);
+  app.use(progressRouter);
+  app.use(getQuestionRouter);
+  app.use(submitRouter);
+  app.use(hintRouter);
 
   app.use((err, req, res, next) => {
     console.error(err);
