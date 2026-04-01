@@ -1,0 +1,49 @@
+version: '3.9'
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: mindovercode
+    ports:
+      - "5432:5432"
+    volumes:
+      - moc_pg:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgres://postgres:postgres@db:5432/mindovercode
+      JWT_SECRET: dev-secret
+      CONTEST_NAME: Mind Over Code
+      COOLDOWN_SECONDS: 10
+      PENALTY_SECONDS: 20
+      CONTEST_DURATION_MINUTES: 240
+      MAX_HIDDEN_PER_SUBMISSION: 5
+      TIME_LIMIT_MS_DEFAULT: 2000
+      JUDGE_DOCKER_IMAGE: mind-over-code-judge:latest
+      USE_DOCKER_JUDGE: "true"
+    depends_on:
+      - db
+    ports:
+      - "4000:4000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  frontend:
+    build: ./frontend
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3000:3000"
+
+  leaderboard:
+    build: ./leaderboard
+    environment:
+      VITE_API_URL: http://localhost:4000
+    ports:
+      - "3001:3001"
+
+volumes:
+  moc_pg:

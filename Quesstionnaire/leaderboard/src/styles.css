@@ -1,0 +1,204 @@
+/* ── Import fonts ──────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:        #131313;
+  --bg-deep:   #0e0e0e;
+  --surface:   #1c1b1b;
+  --surface-2: #201f1f;
+  --surface-3: #2a2a2a;
+  --primary:   #39FF14;
+  --secondary: #00FFFF;
+  --gold:      #FFD700;
+  --silver:    #C0C0C0;
+  --bronze:    #CD7F32;
+  --text:      #e5e2e1;
+  --text-muted:#baccb0;
+  --outline-dim: rgba(133, 150, 124, 0.15);
+  --font-head: 'Space Grotesk', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 14px;
+  min-height: 100vh;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255,255,255,0.012) 2px,
+    rgba(255,255,255,0.012) 4px
+  );
+}
+
+.board { padding: 24px 32px; max-width: 960px; margin: 0 auto; }
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--outline-dim);
+}
+
+.header-brand { display: flex; align-items: center; gap: 12px; }
+
+.brand-glyph {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary);
+  text-shadow: 0 0 14px rgba(57, 255, 20, 0.6);
+  letter-spacing: -4px;
+}
+
+header h1 {
+  margin: 0;
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+.sub {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-head);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--primary);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--primary);
+  animation: ping 1.5s ease infinite;
+}
+
+@keyframes ping {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.timestamp {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-direction: column;
+  text-align: right;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  border: 1px solid var(--outline-dim);
+  background: var(--surface);
+}
+
+.empty-state .spinner {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(57, 255, 20, 0.3);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  border: 1px solid var(--outline-dim);
+}
+
+thead {
+  background: var(--bg-deep);
+}
+
+th {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--outline-dim);
+  text-align: left;
+}
+
+td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--outline-dim);
+  font-size: 14px;
+  transition: background 0.15s;
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: var(--surface-2); }
+
+.rank-cell {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  width: 60px;
+}
+
+.rank-1 .rank-cell { color: var(--gold); text-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+.rank-2 .rank-cell { color: var(--silver); }
+.rank-3 .rank-cell { color: var(--bronze); }
+
+.team-cell {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.rank-1 .team-cell { color: var(--gold); }
+.rank-2 .team-cell { color: var(--silver); }
+.rank-3 .team-cell { color: var(--bronze); }
+
+.score-cell {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.time-cell {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.trophy { font-size: 18px; }
