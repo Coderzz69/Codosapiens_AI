@@ -18,7 +18,7 @@ router.use(requireSecret);
 router.get('/teams', async (req, res) => {
   try {
     const teams = await query('SELECT id, name, created_at FROM teams ORDER BY created_at DESC');
-    res.json({ teams });
+    res.json({ teams: teams.rows });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
