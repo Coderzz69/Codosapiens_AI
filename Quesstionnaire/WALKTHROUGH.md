@@ -49,6 +49,7 @@ npm run dev -- --port 3001
 The leaderboard uses Server-Sent Events (SSE) to update in real-time as soon as submissions are judged by the backend. It will be available at `http://localhost:3001`.
 
 ## Features
+- **Admin GUI Dashboard**: Access the admin console by appending `?admin=true` to the Frontend URL (e.g., `http://localhost:3000/?admin=true`). Unlock it using the `ADMIN_SECRET` from your backend `.env`. Create teams instantly in a clean UI!
 - **Code Evaluation (Judge)**: The backend securely evaluates Python/C++ code. It can use either Dockerized isolation or a local bash script depending on the `.env` settings (`USE_DOCKER_JUDGE=false`).
 - **Cooldowns**: Teams are put on a 10s cooldown upon making submissions. The Frontend enforces this via a `Retry-After` button countdown.
 - **Level Progression**: Successive questions unlock automatically after solving the current level.

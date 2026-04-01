@@ -11,6 +11,7 @@ const { router: getQuestionRouter } = require('./routes/getQuestion');
 const { router: submitRouter } = require('./routes/submit');
 const { router: leaderboardRouter } = require('./routes/leaderboard');
 const { router: hintRouter } = require('./routes/hint');
+const { router: adminRouter } = require('./routes/admin');
 
 async function main() {
   await migrate();
@@ -29,6 +30,9 @@ async function main() {
   app.use(getQuestionRouter);
   app.use(submitRouter);
   app.use(hintRouter);
+
+  // Protected admin routes
+  app.use('/admin', adminRouter);
 
   app.use((err, req, res, next) => {
     console.error(err);

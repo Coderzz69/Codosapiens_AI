@@ -1,0 +1,12 @@
+{
+  "name": "codosapiens-platform",
+  "version": "1.0.0",
+  "description": "Root configuration to run Codosapiens Challenge Platform concurrently.",
+  "scripts": {
+    "start": "concurrently \"npm --prefix backend start\" \"npm --prefix frontend run dev -- --host\" \"npm --prefix leaderboard run dev -- --port 3001 --host\"",
+    "install:all": "npm --prefix backend install && npm --prefix frontend install && npm --prefix leaderboard install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

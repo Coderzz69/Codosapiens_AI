@@ -140,8 +140,116 @@ function LoginScreen({ onLogin }) {
   );
 }
 
+// ── Admin Dashboard ────────────────────────────────────────────────────────────
+function AdminScreen() {
+  const [secret, setSecret] = useState(localStorage.getItem('moc_admin_secret') || '');
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState('Unauthorized');
+  const [newTeam, setNewTeam] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [msg, setMsg] = useState('');
+
+  const fetchTeams = async (s) => {
+    setLoading(true); setErr('');
+    try {
+      const res = await fetch(`${API_URL}/admin/teams`, { headers: { 'x-admin-secret': s } });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setTeams(data.teams || []);
+      localStorage.setItem('moc_admin_secret', s);
+    } catch (e) {
+      setErr(e.message);
+      if (e.message.includes('Unauthorized')) localStorage.removeItem('moc_admin_secret');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { if (secret) fetchTeams(secret); }, []);
+
+  const handleLogin = () => { fetchTeams(secret); };
+
+  const createTeam = async () => {
+    if (!newTeam || !newPin) return setMsg('Need name and pin');
+    setMsg('');
+    try {
+      const res = await fetch(`${API_URL}/admin/team`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+        body: JSON.stringify({ name: newTeam, pin: newPin })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMsg(`Team ${data.name} created!`);
+      setNewTeam(''); setNewPin('');
+      fetchTeams(secret);
+    } catch(e) {
+      setMsg(e.message);
+    }
+  };
+
+  if (err && err.includes('Unauthorized')) {
+    return (
+      <div className="app login-screen">
+        <div className="login-card">
+          <h1 className="brand-title">ADMINISTRATOR_ACCESS</h1>
+          <div className="login-form">
+            <label>ADMIN SECRET</label>
+            <input type="password" value={secret} onChange={e => setSecret(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()}/>
+            {err !== 'Unauthorized' && <div className="err-msg">⚠ {err}</div>}
+            <button className="btn-primary" onClick={handleLogin}>{loading ? 'AUTHORIZING...' : 'AUTHORIZE'}</button>
+            <button className="btn-ghost mt8" onClick={() => window.location.href = '/'}>← Back to Login</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="app layout-col">
+      <header className="app-header">
+        <div className="brand">
+          <span className="brand-glyph-sm">{'{ }'}</span>
+          <div>
+            <h1 className="app-title">COMMAND CENTER (ADMIN)</h1>
+          </div>
+        </div>
+        <button className="btn-ghost btn-sm" onClick={() => { setSecret(''); localStorage.removeItem('moc_admin_secret'); setErr('Unauthorized'); }}>⏏ Logout</button>
+      </header>
+      <main className="main-content" style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+        <div className="card">
+          <h2 className="editor-label" style={{marginBottom: '1rem'}}>CREATE TEAM</h2>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <input placeholder="Team Name" value={newTeam} onChange={e=>setNewTeam(e.target.value)} style={{flex: 1}} />
+            <input placeholder="PIN (4 digits)" value={newPin} onChange={e=>setNewPin(e.target.value)} style={{width: '150px'}} />
+            <button className="btn-primary" onClick={createTeam}>CREATE</button>
+          </div>
+          {msg && <div style={{marginTop:'1rem', color: msg.includes('created')?'var(--brand-neon)':'#ff4444'}}>{msg}</div>}
+        </div>
+        
+        <div className="card" style={{ marginTop: '2rem' }}>
+          <h2 className="editor-label" style={{marginBottom: '1rem'}}>REGISTERED TEAMS ({teams.length})</h2>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
+            {teams.map(t => (
+              <li key={t.id} style={{ padding: '1rem 0', borderBottom: '1px solid var(--border-glow)', display: 'flex', justifyContent: 'space-between' }}>
+                <strong style={{color: 'var(--brand-text)'}}>{t.name}</strong> 
+                <span style={{opacity:0.6, fontSize:'0.85em', fontFamily: 'var(--font-mono)'}}>{new Date(t.created_at).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 // ── Main App ──────────────────────────────────────────────────────────────────
 export default function App() {
+  const isAdminRequest = window.location.search.includes('admin=true');
+  if (isAdminRequest) {
+    return <AdminScreen />;
+  }
   const { token, teamNameStored, save, clear } = useToken();
   const [booting, setBooting] = useState(false);
   const [bootErr, setBootErr] = useState('');

@@ -14,10 +14,7 @@ router.post('/login', async (req, res) => {
 
   const existing = await oneOrNone('select id, pin_hash from teams where name = $1', [teamName]);
   if (!existing) {
-    const hash = await bcrypt.hash(pin, 10);
-    const team = await one('insert into teams (name, pin_hash) values ($1, $2) returning id', [teamName, hash]);
-    const token = jwt.sign({ teamId: team.id }, config.jwtSecret, { expiresIn: '12h' });
-    return res.json({ token, teamId: team.id, teamName });
+    return res.status(401).json({ error: 'Team not found. Please contact an Administrator to register.' });
   }
 
   const ok = await bcrypt.compare(pin, existing.pin_hash);
