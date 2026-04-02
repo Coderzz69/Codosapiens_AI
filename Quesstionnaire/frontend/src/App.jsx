@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import Editor from '@monaco-editor/react';
 
 const API_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:4000');
 
@@ -291,12 +292,20 @@ export default function App() {
   const [question, setQuestion] = useState(null);
   const [qLoading, setQLoading] = useState(false);
   const [language, setLanguage] = useState('py');
-  const [source, setSource] = useState('# Write your solution here\n');
+  const [sources, setSources] = useState({
+    py: '# Write your Python 3 solution here\n',
+    c: '/* Write your C solution here */\n#include <stdio.h>\n\nint main() {\n    return 0;\n}\n',
+    cpp: '/* Write your C++ solution here */\n#include <iostream>\nusing namespace std;\n\nint main() {\n    return 0;\n}\n'
+  });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState(null);
   const [statusMsg, setStatusMsg] = useState('');
   const [hintLoading, setHintLoading] = useState(false);
   const [nextUnlockFlash, setNextUnlockFlash] = useState(false);
+  const [activeTestCase, setActiveTestCase] = useState(0);
+  const [runLoading, setRunLoading] = useState(false);
+  const [runResults, setRunResults] = useState(null); // Array matching question.publicTestCases
+  const [runCompileLog, setRunCompileLog] = useState(''); // Added to show CE/JE logs
   const cooldown = useCooldown();
   const guard = useSubmitGuard();
 
@@ -330,7 +339,9 @@ export default function App() {
     if (!selectedId || !isLoggedIn) return;
     setQLoading(true);
     setResult(null);
+    setRunResults(null);
     setStatusMsg('');
+    setActiveTestCase(0);
     api(`/getQuestion?questionId=${selectedId}`, {}, token)
       .then(data => setQuestion(data))
       .catch(err => {
@@ -352,7 +363,7 @@ export default function App() {
     try {
       const data = await api('/submit', {
         method: 'POST',
-        body: JSON.stringify({ questionId: selectedId, language, source }),
+        body: JSON.stringify({ questionId: selectedId, language, source: sources[language] }),
       }, token);
       setResult(data);
       // Refresh question and progress
@@ -398,7 +409,33 @@ export default function App() {
     setSelectedId(id);
     setQuestion(null);
     setResult(null);
+    setRunResults(null);
     setStatusMsg('');
+  };
+
+  // ── Run against public test cases ─────────────────────────────────────────
+  const runCode = async () => {
+    if (runLoading) return;
+    setStatusMsg('');
+    setRunLoading(true);
+    // Reset individual results, keeping structure aligned to publicTestCases
+    setRunResults(null);
+    setRunCompileLog('');
+    try {
+      const data = await api('/run', {
+        method: 'POST',
+        body: JSON.stringify({ questionId: selectedId, language, source: sources[language] }),
+      }, token);
+      setRunResults(data.testResults);
+      setRunCompileLog(data.compileLog || '');
+      if (data.verdict !== 'AC') setStatusMsg(`⚠ Run completed with verdict: ${data.verdict}`);
+      else setStatusMsg('');
+    } catch (err) {
+      if (err.status === 401) { clear(); return; }
+      setStatusMsg(`⚠ Run error: ${err.message}`);
+    } finally {
+      setRunLoading(false);
+    }
   };
 
   // ── Render: not logged in ─────────────────────────────────────────────────
@@ -446,7 +483,7 @@ export default function App() {
             <span className="pill-label">SOLVED</span>
             <span className="pill-val">{solvedCount}/{totalCount}</span>
           </div>
-          <a href={`${API_URL.replace('4000','4001')}`} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">📊 Leaderboard</a>
+          <a href={import.meta.env.PROD ? '/leaderboard' : `${API_URL.replace('4000','4001')}`} target="_blank" rel="noopener noreferrer" className="btn-ghost btn-sm">📊 Leaderboard</a>
           <button className="btn-ghost btn-sm" onClick={clear}>⏏ Logout</button>
         </div>
       </header>
@@ -557,23 +594,97 @@ export default function App() {
                   <option value="c">C</option>
                 </select>
               </div>
-              <button
-                id="btn-submit"
-                className="btn-primary"
-                onClick={submit}
-                disabled={submitting || cooldown.active || !selectedId}
-              >
-                {submitting ? <><span className="spinner" /> Judging…</> : cooldown.active ? `⏳ ${Math.ceil(cooldown.msLeft / 1000)}s` : '▶ SUBMIT'}
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  id="btn-run"
+                  className="btn-ghost"
+                  onClick={runCode}
+                  disabled={runLoading || !selectedId}
+                >
+                  {runLoading ? <><span className="spinner" /> Running…</> : '▶ RUN'}
+                </button>
+                <button
+                  id="btn-submit"
+                  className="btn-primary"
+                  onClick={submit}
+                  disabled={submitting || cooldown.active || !selectedId}
+                >
+                  {submitting ? <><span className="spinner" /> Judging…</> : cooldown.active ? `⏳ ${Math.ceil(cooldown.msLeft / 1000)}s` : '⇧ SUBMIT'}
+                </button>
+              </div>
             </div>
-            <textarea
-              id="code-editor"
-              className="code-area"
-              value={source}
-              onChange={e => setSource(e.target.value)}
-              placeholder="// Write your solution here"
-              spellCheck={false}
-            />
+            
+            <div style={{ height: '400px', width: '100%', borderBottom: '1px solid var(--border-glow)' }}>
+              <Editor
+                height="100%"
+                language={language === 'py' ? 'python' : language}
+                theme="vs-dark"
+                value={sources[language]}
+                onChange={val => setSources(prev => ({ ...prev, [language]: val || '' }))}
+                options={{
+                  minimap: { enabled: false },
+                  scrollBeyondLastLine: false,
+                  fontSize: 14,
+                  wordWrap: 'on',
+                  padding: { top: 16 }
+                }}
+              />
+            </div>
+
+            {/* Test Case Panel */}
+            {question?.publicTestCases?.length > 0 && (
+              <div style={{ padding: '1rem', backgroundColor: 'var(--bg-layer-2)' }}>
+                {runCompileLog && (
+                  <div style={{ marginBottom: '1rem', padding: '0.5rem', backgroundColor: 'rgba(255, 68, 68, 0.1)', border: '1px solid #ff4444', borderRadius: '4px' }}>
+                    <div className="io-label" style={{ color: '#ff4444' }}>COMPILER / JUDGE ERROR</div>
+                    <pre className="io-pre" style={{ borderColor: 'transparent', backgroundColor: 'transparent', color: '#ffaaaa' }}>{runCompileLog}</pre>
+                  </div>
+                )}
+                <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border-glow)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+                  {question.publicTestCases.map((tc, idx) => {
+                    const isPassed = runResults?.[idx]?.passed;
+                    const resColor = runResults ? (isPassed ? 'var(--brand-neon)' : '#ff4444') : 'inherit';
+                    return (
+                      <button 
+                        key={tc.id} 
+                        className={`btn-ghost btn-sm ${activeTestCase === idx ? 'active' : ''}`}
+                        onClick={() => setActiveTestCase(idx)}
+                        style={{ color: activeTestCase === idx ? 'var(--primary)' : resColor }}
+                      >
+                        Case {idx + 1} {runResults && (isPassed ? '✓' : '✖')}
+                      </button>
+                    );
+                  })}
+                </div>
+                {question.publicTestCases[activeTestCase] && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <div>
+                      <div className="io-label">INPUT</div>
+                      <pre className="io-pre">{question.publicTestCases[activeTestCase].input}</pre>
+                    </div>
+                    <div>
+                      <div className="io-label">EXPECTED OUTPUT</div>
+                      <pre className="io-pre">{question.publicTestCases[activeTestCase].expectedOutput}</pre>
+                    </div>
+                    {runResults && (
+                      <div>
+                        <div className="io-label" style={{ color: runResults[activeTestCase]?.passed ? 'var(--brand-neon)' : '#ff4444' }}>
+                          ACTUAL OUTPUT
+                        </div>
+                        <pre className="io-pre" style={{ borderColor: runResults[activeTestCase]?.passed ? 'var(--brand-neon)' : '#ff4444' }}>
+                          {runResults[activeTestCase]?.actualOutput || '(No output)'}
+                        </pre>
+                        {runResults[activeTestCase]?.logs && (
+                          <pre className="io-pre" style={{ marginTop: '0.5rem', opacity: 0.8 }}>
+                            {runResults[activeTestCase].logs}
+                          </pre>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Result panel */}
             {result && (

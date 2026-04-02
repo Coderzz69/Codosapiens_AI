@@ -12,7 +12,9 @@ function safeWrite(filePath, content) {
 }
 
 async function runDockerJudge({ language, source, tests, timeLimitMs }) {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'moc-'));
+  const baseTmp = path.join(__dirname, '..', '..', '..', 'tmp');
+  if (!fs.existsSync(baseTmp)) fs.mkdirSync(baseTmp);
+  const tmpDir = fs.mkdtempSync(path.join(baseTmp, 'moc-'));
   const srcFile = language === 'py' ? 'main.py' : language === 'c' ? 'main.c' : 'main.cpp';
   safeWrite(path.join(tmpDir, srcFile), source);
   safeWrite(path.join(tmpDir, 'tests.json'), JSON.stringify({ tests, timeLimitMs }));
@@ -80,7 +82,9 @@ async function runLocalJudge({ language, source, tests, timeLimitMs }) {
     };
   }
 
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'moc-local-'));
+  const baseTmp = path.join(__dirname, '..', '..', '..', 'tmp');
+  if (!fs.existsSync(baseTmp)) fs.mkdirSync(baseTmp);
+  const tmpDir = fs.mkdtempSync(path.join(baseTmp, 'moc-local-'));
   const srcFile = path.join(tmpDir, 'main.py');
   const runnerPath = path.join(__dirname, '..', '..', '..', 'judge', 'runner.py');
   const runnerDest = path.join(tmpDir, 'runner.py');

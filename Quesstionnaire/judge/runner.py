@@ -95,7 +95,7 @@ def main():
             'timeMs': elapsed,
             'weight': t.get('weight', 1),
             'expected': t['output'][:500],
-            'actual': out[:500]
+            'actual': (out + ('\n[STDERR]\n' + err if err else ''))[:500]
         })
 
         if verdict in ('TLE', 'RE'):

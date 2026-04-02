@@ -68,6 +68,7 @@ create table if not exists test_cases (
   weight int not null default 1,
   group_id int not null default 1
 );
+create unique index if not exists ux_test_cases_unique on test_cases(question_id, input_text, output_text);
 
 create table if not exists team_question_progress (
   id uuid primary key default uuid_generate_v4(),

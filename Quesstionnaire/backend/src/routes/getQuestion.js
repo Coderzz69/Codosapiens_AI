@@ -1,5 +1,5 @@
 const express = require('express');
-const { one, oneOrNone } = require('../db');
+const { query, one, oneOrNone } = require('../db');
 
 const router = express.Router();
 
@@ -22,6 +22,11 @@ router.get('/getQuestion', async (req, res) => {
     [questionId]
   );
 
+  const testCasesRes = await query(
+    'select id, input_text, output_text from test_cases where question_id = $1 and is_hidden = false order by id asc limit 3',
+    [questionId]
+  );
+
   res.json({
     id: q.id,
     title: q.title,
@@ -33,7 +38,12 @@ router.get('/getQuestion', async (req, res) => {
     hintLocked: !progress.hint_unlocked,
     hint: progress.hint_unlocked ? q.hint : null,
     attempts: progress.attempts,
-    timeSpentMs: progress.time_spent_ms
+    timeSpentMs: progress.time_spent_ms,
+    publicTestCases: testCasesRes.rows.map(tc => ({
+      id: tc.id,
+      input: tc.input_text,
+      expectedOutput: tc.output_text
+    }))
   });
 });
 

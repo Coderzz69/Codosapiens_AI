@@ -10,6 +10,7 @@ const { router: startRouter } = require('./routes/start');
 const { router: progressRouter } = require('./routes/progress');
 const { router: getQuestionRouter } = require('./routes/getQuestion');
 const { router: submitRouter } = require('./routes/submit');
+const { router: runRouter } = require('./routes/run');
 const { router: leaderboardRouter } = require('./routes/leaderboard');
 const { router: hintRouter } = require('./routes/hint');
 const { router: adminRouter } = require('./routes/admin');
@@ -42,6 +43,7 @@ async function main() {
   app.use(progressRouter);
   app.use(getQuestionRouter);
   app.use(submitRouter);
+  app.use(runRouter);
   app.use(hintRouter);
 
   app.use((err, req, res, next) => {
